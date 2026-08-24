@@ -15,6 +15,16 @@ class Apple:
   def move(self):
     self.rect.y += self.speed
 
+
+class Bomb:
+  def __init__(self, image, position, speed):
+    self.image = image
+    self.rect = self.image.get_rect(topleft = position)
+    self.speed = speed
+
+  def move(self):
+    self.rect.y += self.speed
+
 # variables:
 speed = 3
 score = 0
@@ -38,10 +48,19 @@ player_rect = player_image.get_rect(center = (screen.get_width()/2,
 apple_image = pygame.image.load('assets/apple.png').convert_alpha()
 apple_image = pygame.transform.scale(apple_image, (TILESIZE, TILESIZE))
 
+# bomb:
+bomb_image = pygame.image.load('assets/bomb.png').convert_alpha()
+bomb_image = pygame.transform.scale(bomb_image, (TILESIZE, TILESIZE))
+
 apples = [
   Apple(apple_image, (100,0), 3),
   Apple(apple_image, (300,0), 3),
 ]
+
+bombs = [
+  Bomb(bomb_image, (50,0), 3)
+]
+
 
 # fonts:
 font = pygame.font.Font('assets/PixeloidMono.ttf', TILESIZE//2)
@@ -56,6 +75,7 @@ running = True
 def update():
   global speed
   global score
+  global running
 
   keys = pygame.key.get_pressed()
 
@@ -63,6 +83,13 @@ def update():
     player_rect.x -= 8
   if keys[pygame.K_RIGHT]:
     player_rect.x += 8
+
+
+# keep player within bounds:
+  if player_rect.left < 0:
+    player_rect.left = 0
+  if player_rect.right > screen.get_width():
+    player_rect.right = screen.get_width()
 
   # apple movement:
   for apple in apples:
@@ -79,6 +106,17 @@ def update():
       pickup.play()
 
 
+  # bomb movement:
+  for bomb in bombs:
+    bomb.move()
+
+    if bomb.rect.colliderect(floor_rect):
+      bombs.remove(bomb)
+      bombs.append(Bomb(bomb_image, (random.randint(50,300), -50), speed))
+    elif bomb.rect.colliderect(player_rect):
+      running = False
+
+
 
 
 def draw(): 
@@ -88,6 +126,9 @@ def draw():
 
   for apple in apples:
     screen.blit(apple.image, apple.rect)
+
+  for bomb in bombs:
+    screen.blit(bomb_image, bomb.rect)
 
   score_text = font.render(f'Score: {score}', True, "white")
   screen.blit(score_text, (5,5))
