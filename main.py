@@ -81,9 +81,15 @@ def update():
 
   keys = pygame.key.get_pressed()
 
+# player movement:
   if keys[pygame.K_LEFT]:
     player_rect.x -= 8
   if keys[pygame.K_RIGHT]:
+    player_rect.x += 8
+# alternate player movement:
+  if keys[pygame.K_a]:
+    player_rect.x -= 8
+  if keys[pygame.K_d]:
     player_rect.x += 8
 
 
@@ -93,22 +99,24 @@ def update():
   if player_rect.right > screen.get_width():
     player_rect.right = screen.get_width()
 
-  # apple movement:
+# apple movement:
   for apple in apples:
     apple.move()
 
     if apple.rect.colliderect(floor_rect):
       apples.remove(apple)
       apples.append(Apple(apple_image, (random.randint(50, 300), -50), speed))
+      score -= 1
+      speed -= 0.05
     elif apple.rect.colliderect(player_rect):      
       apples.remove(apple)      
       apples.append(Apple(apple_image, (random.randint(50, 300), -50), speed))
       speed += 0.1
-      score += 1
+      score += 2
       pickup.play()
 
 
-  # bomb movement:
+# bomb movement:
   for bomb in bombs:
     bomb.move()
 
