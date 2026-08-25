@@ -86,6 +86,7 @@ def update():
     player_rect.x -= 8
   if keys[pygame.K_RIGHT]:
     player_rect.x += 8
+    
 # alternate player movement:
   if keys[pygame.K_a]:
     player_rect.x -= 8
@@ -93,11 +94,13 @@ def update():
     player_rect.x += 8
 
 
-# keep player within bounds:
-  if player_rect.left < 0:
-    player_rect.left = 0
-  if player_rect.right > screen.get_width():
-    player_rect.right = screen.get_width()
+
+# keep player within bounds with smooth screen wrapping
+  if player_rect.right < 0:
+    player_rect.left = screen.get_width()
+  if player_rect.left > screen.get_width():
+    player_rect.right = 0
+
 
 # apple movement:
   for apple in apples:
@@ -106,7 +109,8 @@ def update():
     if apple.rect.colliderect(floor_rect):
       apples.remove(apple)
       apples.append(Apple(apple_image, (random.randint(50, 300), -50), speed))
-      score -= 1
+      if score > 0:
+        score -= 1
       speed -= 0.05
     elif apple.rect.colliderect(player_rect):      
       apples.remove(apple)      
