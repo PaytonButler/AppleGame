@@ -28,6 +28,7 @@ class Bomb:
 # variables:
 speed = 3
 score = 0
+game_over = False
 
 
 # constants:
@@ -76,6 +77,7 @@ def update():
   global speed
   global score
   global running
+  global game_over
 
   keys = pygame.key.get_pressed()
 
@@ -114,9 +116,17 @@ def update():
       bombs.remove(bomb)
       bombs.append(Bomb(bomb_image, (random.randint(50,300), -50), speed))
     elif bomb.rect.colliderect(player_rect):
-      running = False
+      game_over = True
 
 
+def game_end():
+  screen.fill('red')
+  game_over_text = font.render("GAME OVER", True, "white")
+  final_score = font.render(f'Score: {score}', True, "white")
+  game_over_rect = game_over_text.get_rect(center = screen.get_rect().center)
+  final_rect = final_score.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
+  screen.blit(game_over_text, game_over_rect)
+  screen.blit(final_score, final_rect)
 
 
 def draw(): 
@@ -143,8 +153,12 @@ while running:
       pygame.quit()  
       sys.exit()
 
-  update()
-  draw()
+  if game_over is False:
+    update()
+    draw()
+  elif game_over is True:
+    game_end()
+
 
   clock.tick(60)
 
