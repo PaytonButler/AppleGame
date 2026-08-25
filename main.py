@@ -35,11 +35,21 @@ class Bomb:
   def move(self):
     self.rect.y += self.speed
 
+# high score storage:
+try:
+    with open("hs.txt", "r") as file:
+        high_score = int(file.read())
+except (FileNotFoundError, ValueError):
+    # default to 0 if the file doesn't exist, is empty, or is corrupted
+    high_score = 0 
+
+
+
 # variables:
 speed = 3
 score = 0
-high_score = 0
 game_over = False
+new_hs = False
 
 # floor:
 floor_image = pygame.image.load('assets/floor.png').convert_alpha()
@@ -137,6 +147,7 @@ def update():
       game_over = True
 
 
+
 # game-over screen:
 def game_end():
   global retry_button_rect
@@ -146,13 +157,18 @@ def game_end():
   overlay.fill((255, 0, 0, 150)) 
   screen.blit(overlay, (0, 0))
 
-  game_over_text = font.render("GAME OVER", True, "white")
-  final_score = font.render(f'Final Score: {score}', True, "white")
+  game_over_text = font.render("GAME OVER :(", True, "white")
+  final_score_text = font.render("Final Score:", True, "white")
+  score_font = pygame.font.Font('assets/PixeloidMono.ttf', 32)
+  final_score_num = score_font.render(f'{score}', True, "white")
+  score_rect = final_score_num.get_rect(center=(175, 150))
+  hs_text = font.render("New High Score!", True, "white")
   
   game_over_rect = game_over_text.get_rect(center = (screen.get_width() // 2, screen.get_height() - 550))
-  final_score_rect = final_score.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
+  final_score_rect = final_score_text.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
+  high_score_rect = hs_text.get_rect(midtop = (screen.get_width() // 2, retry_button_rect.top - 40))
 
-  retry_button_rect.midtop = (screen.get_width() // 2, final_score_rect.bottom + 150)
+  retry_button_rect.midtop = (screen.get_width() // 2, final_score_rect.bottom + 200)
   quit_button_rect.midtop = (screen.get_width() // 2, retry_button_rect.bottom + 20)
 
   retry_bg_rect = retry_button_rect.inflate(20, 10)
@@ -165,18 +181,23 @@ def game_end():
   pygame.draw.rect(screen, "white", quit_bg_rect, width=2, border_radius=6)
 
   screen.blit(game_over_text, game_over_rect)
-  screen.blit(final_score, final_score_rect)
+  screen.blit(final_score_text, final_score_rect)
+  screen.blit(final_score_num, score_rect)
+  if new_hs:
+    screen.blit(hs_text, high_score_rect)
   screen.blit(retry_button, retry_button_rect)
   screen.blit(quit_button, quit_button_rect)
 
 
+
 # resets score and mechanics when retry is clicked:
 def reset_game():
-  global game_over, score, speed, apples, bombs, player_rect
+  global game_over, score, speed, apples, bombs, player_rect, new_hs
 
   game_over = False
   score = 0
   speed = 3
+  new_hs = False
 
   player_rect.center = (screen.get_width()/2,
                          screen.get_height()-floor_image.get_height()-(player_image.get_height()/2))
@@ -202,15 +223,23 @@ def draw():
   for bomb in bombs:
     screen.blit(bomb_image, bomb.rect)
 
-  score_text = font.render(f'Score: {score}', True, "white")
-  screen.blit(score_text, (5,5))
+  hs_text = font.render(f'High Score: {high_score}', True, "white")
+  screen.blit(hs_text, (5,575))
 
+
+  score_font = pygame.font.Font('assets/PixeloidMono.ttf', 32)
+  score_text = score_font.render(f'{score}', True, "white")
+  score_rect = score_text.get_rect(center=(175, 150))
+  screen.blit(score_text, score_rect)
 
 # game loop:
 while running: 
 
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
+      hs_str = str(high_score)
+      with open("hs.txt", "w") as file:
+        file.write(hs_str)
       pygame.quit()  
       sys.exit()
 
@@ -220,6 +249,9 @@ while running:
         if retry_button_rect.collidepoint(mouse_pos):
           reset_game()
         elif quit_button_rect.collidepoint(mouse_pos):
+          hs_str = str(high_score)
+          with open("hs.txt", "w") as file:
+            file.write(hs_str)
           pygame.quit()
           sys.exit()
 
@@ -228,6 +260,9 @@ while running:
     update()
     draw()
   elif game_over is True:
+    if score > high_score:
+      new_hs = True
+      high_score = score
     draw()
     game_end()
 
