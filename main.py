@@ -120,13 +120,30 @@ def update():
 
 
 def game_end():
-  screen.fill('red')
+  # Create a semi-transparent surface matching the screen size
+  overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+  
+  # Fill with red and 150 alpha (0 = invisible, 255 = solid)
+  overlay.fill((255, 0, 0, 150)) 
+  
+  # Draw the overlay over the existing, frozen game visuals
+  screen.blit(overlay, (0, 0))
+  
+  # Render both texts
   game_over_text = font.render("GAME OVER", True, "white")
   final_score = font.render(f'Score: {score}', True, "white")
+  
+  # Position Game Over exactly in the center of the screen
   game_over_rect = game_over_text.get_rect(center = screen.get_rect().center)
+  
+  # Snap the top of the Score text 20 pixels below the bottom of Game Over
   final_rect = final_score.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
+  
+  # Draw both to the screen
   screen.blit(game_over_text, game_over_rect)
   screen.blit(final_score, final_rect)
+
+
 
 
 def draw(): 
@@ -157,6 +174,7 @@ while running:
     update()
     draw()
   elif game_over is True:
+    draw()
     game_end()
 
 
