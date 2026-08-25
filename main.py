@@ -16,6 +16,9 @@ font = pygame.font.Font('assets/PixeloidMono.ttf', TILESIZE//2)
 pickup = pygame.mixer.Sound('assets/powerup.mp3')
 pickup.set_volume(0.1)
 
+explode = pygame.mixer.Sound('assets/explosion.mp3')
+explode.set_volume(0.1)
+
 class Apple:
   def __init__(self, image, position, speed):
     self.image = image
@@ -54,11 +57,11 @@ new_hs = False
 # floor:
 floor_image = pygame.image.load('assets/floor.png').convert_alpha()
 floor_image = pygame.transform.scale(floor_image, (TILESIZE*15, TILESIZE*5))
-floor_rect = floor_image.get_rect(bottomleft = (0, screen.get_height()))
+floor_rect = floor_image.get_rect(bottomleft = (-20, screen.get_height()))
 
 # player:
-player_image = pygame.image.load('assets/player_static.png').convert_alpha()
-player_image = pygame.transform.scale(player_image, (TILESIZE, TILESIZE*2))
+player_image = pygame.image.load('assets/basket.png').convert_alpha()
+player_image = pygame.transform.scale(player_image, (TILESIZE*1.5, TILESIZE))
 player_rect = player_image.get_rect(center = (screen.get_width()/2,
                                               screen.get_height()-floor_image.get_height()-(player_image.get_height()/2)))
 
@@ -144,7 +147,9 @@ def update():
       bombs.remove(bomb)
       bombs.append(Bomb(bomb_image, (random.randint(50,300), -50), speed))
     elif bomb.rect.colliderect(player_rect):
+      explode.play()
       game_over = True
+
 
 
 
@@ -157,7 +162,7 @@ def game_end():
   overlay.fill((255, 0, 0, 150)) 
   screen.blit(overlay, (0, 0))
 
-  game_over_text = font.render("GAME OVER :(", True, "white")
+  game_over_text = font.render("GAME OVER", True, "white")
   final_score_text = font.render("Final Score:", True, "white")
   score_font = pygame.font.Font('assets/PixeloidMono.ttf', 32)
   final_score_num = score_font.render(f'{score}', True, "white")
@@ -213,7 +218,7 @@ def reset_game():
 
 
 def draw(): 
-  screen.fill('lightblue')
+  screen.fill('#63CFF7')
   screen.blit(floor_image, floor_rect)
   screen.blit(player_image, player_rect)
 
