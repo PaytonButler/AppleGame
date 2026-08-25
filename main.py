@@ -6,6 +6,16 @@ pygame.init()
 screen = pygame.display.set_mode((350, 600))
 clock = pygame.time.Clock()
 
+# constants:
+TILESIZE = 32
+
+# fonts:
+font = pygame.font.Font('assets/PixeloidMono.ttf', TILESIZE//2)
+
+# sound effects:
+pickup = pygame.mixer.Sound('assets/powerup.mp3')
+pickup.set_volume(0.1)
+
 class Apple:
   def __init__(self, image, position, speed):
     self.image = image
@@ -28,11 +38,8 @@ class Bomb:
 # variables:
 speed = 3
 score = 0
+high_score = 0
 game_over = False
-
-
-# constants:
-TILESIZE = 32
 
 # floor:
 floor_image = pygame.image.load('assets/floor.png').convert_alpha()
@@ -53,6 +60,13 @@ apple_image = pygame.transform.scale(apple_image, (TILESIZE, TILESIZE))
 bomb_image = pygame.image.load('assets/bomb.png').convert_alpha()
 bomb_image = pygame.transform.scale(bomb_image, (TILESIZE, TILESIZE))
 
+# buttons:
+retry_button = font.render(f"Try Again", True, "white")
+quit_button = font.render(f"Quit Game", True, "white")
+retry_button_rect = retry_button.get_rect(center = (-100, -100))
+quit_button_rect = quit_button.get_rect(center = (-100, -100))
+
+
 apples = [
   Apple(apple_image, (100,0), 3),
   Apple(apple_image, (300,0), 3),
@@ -62,16 +76,8 @@ bombs = [
   Bomb(bomb_image, (50,0), 3)
 ]
 
-
-# fonts:
-font = pygame.font.Font('assets/PixeloidMono.ttf', TILESIZE//2)
-
-# sound effects:
-pickup = pygame.mixer.Sound('assets/powerup.mp3')
-pickup.set_volume(0.1)
-
-
 running = True
+mouse_pos = (0,0)
 
 def update():
   global speed
@@ -131,28 +137,58 @@ def update():
       game_over = True
 
 
+# game-over screen:
 def game_end():
+  global retry_button_rect
+  global quit_button_rect
+  
   overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
   overlay.fill((255, 0, 0, 150)) 
   screen.blit(overlay, (0, 0))
-  
-  game_over_text = font.render("GAME OVER", True, "white")
-  final_score = font.render(f'Score: {score}', True, "white")
-  retry_button = font.render(f"Try Again", True, "white")
-  quit_button = font.render(f"Quit Game", True, "white")
-  
-  game_over_rect = game_over_text.get_rect(center = screen.get_rect().center)
-  final_score_rect = final_score.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
-  retry_button_rect = retry_button.get_rect(midtop = (screen.get_width() // 2, final_score_rect.bottom + 20))
-  quit_button_rect = quit_button.get_rect(midtop = (screen.get_width() // 2, retry_button_rect.bottom + 20))
 
+  game_over_text = font.render("GAME OVER", True, "white")
+  final_score = font.render(f'Final Score: {score}', True, "white")
   
+  game_over_rect = game_over_text.get_rect(center = (screen.get_width() // 2, screen.get_height() - 550))
+  final_score_rect = final_score.get_rect(midtop = (screen.get_width() // 2, game_over_rect.bottom + 20))
+
+  retry_button_rect.midtop = (screen.get_width() // 2, final_score_rect.bottom + 150)
+  quit_button_rect.midtop = (screen.get_width() // 2, retry_button_rect.bottom + 20)
+
+  retry_bg_rect = retry_button_rect.inflate(20, 10)
+  quit_bg_rect = quit_button_rect.inflate(20, 10)
+
+  pygame.draw.rect(screen, (211, 211, 211), retry_bg_rect, border_radius = 6)
+  pygame.draw.rect(screen, (211, 211, 211), quit_bg_rect, border_radius=6)
+
+  pygame.draw.rect(screen, "white", retry_bg_rect, width=2, border_radius=6)
+  pygame.draw.rect(screen, "white", quit_bg_rect, width=2, border_radius=6)
+
   screen.blit(game_over_text, game_over_rect)
   screen.blit(final_score, final_score_rect)
   screen.blit(retry_button, retry_button_rect)
   screen.blit(quit_button, quit_button_rect)
 
 
+# resets score and mechanics when retry is clicked:
+def reset_game():
+  global game_over, score, speed, apples, bombs, player_rect
+
+  game_over = False
+  score = 0
+  speed = 3
+
+  player_rect.center = (screen.get_width()/2,
+                         screen.get_height()-floor_image.get_height()-(player_image.get_height()/2))
+
+  apples = [
+    Apple(apple_image, (100,0), speed),
+    Apple(apple_image, (300,0), speed),
+  ]
+
+  bombs = [
+    Bomb(bomb_image, (50,0), speed)
+  ]
 
 
 def draw(): 
@@ -179,7 +215,14 @@ while running:
       sys.exit()
 
     if event.type == pygame.MOUSEBUTTONUP:
-      pygame.mouse.get_pos()
+      mouse_pos = event.pos
+      if game_over:
+        if retry_button_rect.collidepoint(mouse_pos):
+          reset_game()
+        elif quit_button_rect.collidepoint(mouse_pos):
+          pygame.quit()
+          sys.exit()
+
 
   if game_over is False:
     update()
