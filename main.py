@@ -56,7 +56,6 @@ except (FileNotFoundError, ValueError):
     high_score = 0 
 
 
-
 # variables:
 speed = 3
 score = 0
@@ -120,7 +119,6 @@ def update():
   global high_score
   global new_hs_voice
 
-
   keys = pygame.key.get_pressed()
 
 # player movement:
@@ -134,7 +132,6 @@ def update():
     player_rect.x -= 8
   if keys[pygame.K_d]:
     player_rect.x += 8
-
 
 
 # keep player within bounds with smooth screen wrapping
@@ -184,8 +181,6 @@ def update():
       game_over_timer = EXPLOSION_DELAY
 
 
-
-
 # game-over screen:
 def game_end():
   global retry_button_rect
@@ -227,7 +222,6 @@ def game_end():
   screen.blit(quit_button, quit_button_rect)
 
 
-
 # resets score and mechanics when retry is clicked:
 def reset_game():
   global game_over, score, speed, apples, bombs, player_rect, new_hs, new_hs_sound_played
@@ -265,7 +259,6 @@ def draw():
   hs_text = font.render(f'High Score: {high_score}', True, "white")
   screen.blit(hs_text, (5,575))
 
-
   score_font = pygame.font.Font('assets/PixeloidMono.ttf', 32)
   score_text = score_font.render(f'{score}', True, "white")
   score_rect = score_text.get_rect(center=(175, 150))
@@ -294,7 +287,7 @@ while running:
           with open("hs.txt", "w") as file:
             file.write(hs_str)
 
-          pygame.time.delay(275)
+          pygame.time.delay(280)
 
           pygame.quit()
           sys.exit()
@@ -310,7 +303,5 @@ while running:
     else:
         game_end()
 
-
   clock.tick(60)
-
   pygame.display.update()
