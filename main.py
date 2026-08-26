@@ -19,6 +19,15 @@ pickup.set_volume(0.1)
 explode = pygame.mixer.Sound('assets/explosion.mp3')
 explode.set_volume(0.1)
 
+button_press = pygame.mixer.Sound('assets/button_press.mp3')
+button_press.set_volume(0.8)
+
+new_hs_sound = pygame.mixer.Sound('assets/high_score_sound.mp3')
+new_hs_sound.set_volume(0.5)
+
+new_hs_voice = pygame.mixer.Sound('assets/new_hs_voice.mp3')
+new_hs_voice.set_volume(0.4)
+
 class Apple:
   def __init__(self, image, position, speed):
     self.image = image
@@ -55,6 +64,8 @@ game_over = False
 new_hs = False
 game_over_timer = 0
 EXPLOSION_DELAY = 20
+new_hs = False
+new_hs_sound_played = False
 
 # floor:
 floor_image = pygame.image.load('assets/floor.png').convert_alpha()
@@ -104,6 +115,11 @@ def update():
   global running
   global game_over
   global game_over_timer
+  global new_hs_sound_played
+  global new_hs
+  global high_score
+  global new_hs_voice
+
 
   keys = pygame.key.get_pressed()
 
@@ -144,6 +160,14 @@ def update():
       speed += 0.1
       score += 2
       pickup.play()
+
+      if score > high_score:
+        new_hs = True
+        high_score = score
+        if not new_hs_sound_played:
+          new_hs_sound.play()
+          new_hs_voice.play()
+          new_hs_sound_played = True
 
 
 # bomb movement:
@@ -206,8 +230,9 @@ def game_end():
 
 # resets score and mechanics when retry is clicked:
 def reset_game():
-  global game_over, score, speed, apples, bombs, player_rect, new_hs
+  global game_over, score, speed, apples, bombs, player_rect, new_hs, new_hs_sound_played
 
+  new_hs_sound_played = False
   game_over = False
   score = 0
   speed = 3
@@ -261,11 +286,16 @@ while running:
       mouse_pos = event.pos
       if game_over:
         if retry_button_rect.collidepoint(mouse_pos):
+          button_press.play()
           reset_game()
         elif quit_button_rect.collidepoint(mouse_pos):
+          button_press.play()
           hs_str = str(high_score)
           with open("hs.txt", "w") as file:
             file.write(hs_str)
+
+          pygame.time.delay(275)
+
           pygame.quit()
           sys.exit()
 
@@ -274,9 +304,6 @@ while running:
     update()
     draw()
   elif game_over is True:
-    if score > high_score:
-        new_hs = True
-        high_score = score
     draw()
     if game_over_timer > 0:
         game_over_timer -= 1
