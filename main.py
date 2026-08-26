@@ -72,7 +72,7 @@ apple_image = pygame.image.load('assets/apple.png').convert_alpha()
 apple_image = pygame.transform.scale(apple_image, (TILESIZE, TILESIZE))
 
 # bomb:
-bomb_image = pygame.image.load('assets/bomb.png').convert_alpha()
+bomb_image = pygame.image.load('assets/regular_bomb.png').convert_alpha()
 bomb_image = pygame.transform.scale(bomb_image, (TILESIZE, TILESIZE))
 
 # explosion:
