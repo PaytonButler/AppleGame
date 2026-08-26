@@ -53,6 +53,8 @@ speed = 3
 score = 0
 game_over = False
 new_hs = False
+game_over_timer = 0
+EXPLOSION_DELAY = 20
 
 # floor:
 floor_image = pygame.image.load('assets/floor.png').convert_alpha()
@@ -72,6 +74,10 @@ apple_image = pygame.transform.scale(apple_image, (TILESIZE, TILESIZE))
 # bomb:
 bomb_image = pygame.image.load('assets/bomb.png').convert_alpha()
 bomb_image = pygame.transform.scale(bomb_image, (TILESIZE, TILESIZE))
+
+# explosion:
+explosion_image = pygame.image.load('assets/exploded.png').convert_alpha()
+explosion_image = pygame.transform.scale(explosion_image, (TILESIZE, TILESIZE))
 
 # buttons:
 retry_button = font.render(f"Try Again", True, "white")
@@ -97,6 +103,7 @@ def update():
   global score
   global running
   global game_over
+  global game_over_timer
 
   keys = pygame.key.get_pressed()
 
@@ -147,8 +154,10 @@ def update():
       bombs.remove(bomb)
       bombs.append(Bomb(bomb_image, (random.randint(50,300), -50), speed))
     elif bomb.rect.colliderect(player_rect):
+      bomb.image = explosion_image
       explode.play()
       game_over = True
+      game_over_timer = EXPLOSION_DELAY
 
 
 
@@ -226,7 +235,7 @@ def draw():
     screen.blit(apple.image, apple.rect)
 
   for bomb in bombs:
-    screen.blit(bomb_image, bomb.rect)
+    screen.blit(bomb.image, bomb.rect)
 
   hs_text = font.render(f'High Score: {high_score}', True, "white")
   screen.blit(hs_text, (5,575))
@@ -266,10 +275,13 @@ while running:
     draw()
   elif game_over is True:
     if score > high_score:
-      new_hs = True
-      high_score = score
+        new_hs = True
+        high_score = score
     draw()
-    game_end()
+    if game_over_timer > 0:
+        game_over_timer -= 1
+    else:
+        game_end()
 
 
   clock.tick(60)
